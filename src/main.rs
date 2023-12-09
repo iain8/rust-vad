@@ -42,6 +42,8 @@ fn main() -> anyhow::Result<()> {
 
     let mut speech_started = false;
 
+    let mut time = 0;
+
     for chunk in data.chunks(get_window_size()) {
         let chunk_array = ndarray::Array1::from_iter(chunk.to_owned());
 
@@ -67,15 +69,17 @@ fn main() -> anyhow::Result<()> {
 
         for value in tensor.view().iter() {
             if value.to_owned() > 0.5 && speech_started == false {
-                println!("detected speech start ({})", value);
+                println!("{}ms detected speech start ({})", time, value);
 
                 speech_started = true;
-            } else if value.to_owned() < 0.35 && speech_started == true {
-                println!("detected speech end ({})", value);
+            } else if value.to_owned() < 0.35 && speech_started {
+                println!("{}ms detected speech end ({})", time, value);
 
                 speech_started = false;
             }
         }
+
+        time += 100;
     }
 
     Ok(())
