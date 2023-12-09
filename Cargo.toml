@@ -1,0 +1,12 @@
+[package]
+name = "rust-vad"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+anyhow = "1.0.75"
+ndarray = "0.15.6"
+ort = { version = "2.0.0-alpha.2" }
+wavers = { version = "1.1.1", features = ["ndarray"] }
