@@ -1,3 +1,5 @@
+use std::time::Instant;
+
 use ndarray::{Array3, Axis};
 use ort::{inputs, Error, Session};
 use wavers::{Samples, Wav};
@@ -29,6 +31,8 @@ fn format_time(ms: i32) -> String {
 }
 
 fn main() -> anyhow::Result<()> {
+    let start_time = Instant::now();
+
     let model = load_model().expect("failed to load model");
     println!("{}", model.metadata()?.description()?);
 
@@ -101,6 +105,8 @@ fn main() -> anyhow::Result<()> {
 
         elapsed_time_ms += 100;
     }
+
+    println!("Elapsed time: {:.2?}", start_time.elapsed());
 
     Ok(())
 }
