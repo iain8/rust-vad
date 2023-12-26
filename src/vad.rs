@@ -2,7 +2,8 @@ use std::time::Instant;
 
 use ndarray::{Array3, Axis};
 use ort::{inputs, Error, Session};
-use wavers::{Samples, Wav};
+
+use crate::ffmpeg::ffdecode;
 
 fn load_model() -> Result<Session, Error> {
     Session::builder()?
@@ -30,38 +31,48 @@ fn format_time(ms: i32) -> String {
     )
 }
 
-pub fn run_file() -> anyhow::Result<()> {
+pub fn run_file(path: &str) -> anyhow::Result<()> {
     let start_time = Instant::now();
 
     let model = load_model().expect("failed to load model");
-    println!("{}", model.metadata()?.description()?);
 
-    let mut wav: Wav<i16> = Wav::from_path("./en.wav").expect("failed to load audio file");
-    let samples: Samples<i16> = wav.read()?;
-    let (sample_rate, channels, duration, encoding) = wav.wav_spec();
+    let samples = ffdecode(path);
+    //
+    // let samples = decode(path);
+    println!("samples max {:?}", samples.iter().max().unwrap());
+    // let samples = load_and_decode_s16le(path);
+    let modifier = 1.0 / samples.iter().max().unwrap().abs() as f32;
+    // let max = samples.iter().max().unwrap();
 
-    println!(
-        "loaded audio file: {}Hz, {}ch, {}s, {}bit",
-        sample_rate, channels, duration, encoding
-    );
+    let mut data_max = 0.0; // 0.0;
 
     // create buffer of normalised(?) floats
     let data: Vec<f32> = samples
         .iter()
         .map(|input| {
-            let mut val = *input as f32;
+            let normal = (input.abs() as f32) * modifier;
 
-            val = 32767.0 / val.abs();
+            if normal > data_max {
+                data_max = normal;
+            }
 
-            val
+            if normal > 1.0 {
+                return 1.0;
+            }
+
+            normal
         })
         .collect();
-
     let mut speech_started = false;
+    // println!("data {:?}", data);
+    println!("data max {:?}", data_max);
 
     let mut elapsed_time_ms = 0;
 
+    let sample_rate = 8000; // TODO: hmm
+
     for chunk in data.chunks(get_window_size(sample_rate)) {
+        // println!("chunk {:?}", chunk);
         let chunk_array = ndarray::Array1::from_iter(chunk.to_owned());
 
         // making it a 2D array?
@@ -100,6 +111,8 @@ pub fn run_file() -> anyhow::Result<()> {
                 );
 
                 speech_started = false;
+            } else {
+                // println!("silence!");
             }
         }
 
