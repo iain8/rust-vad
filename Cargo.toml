@@ -7,13 +7,8 @@ edition = "2021"
 
 [dependencies]
 anyhow = "1.0.75"
-axum = "0.7.2"
-byteorder = "1.5.0"
-env_logger = "0.10.1"
-ffmpeg-next = { version = "6.1.0", features = ["default"] }
-hound = "3.5.1"
+axum = { version = "0.7.2", features = ["default", "macros"] }
 ndarray = "0.15.6"
 ort = { version = "2.0.0-alpha.2" }
-symphonia = { version = "0.5.3" }
-symphonia-format-wav = "0.5.3"
+serde = { version = "1.0.193", features = ["derive"] }
 tokio = { version = "1.35.0", features = ["full"] }
