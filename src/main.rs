@@ -63,9 +63,4 @@ async fn analyse(State(state): State<AppState>, body: Bytes) -> Json<Vec<Marker>
     let result = analyse_data(state.vad_model, body.to_vec()).unwrap();
 
     Json(result)
-
-    // match analyse_data(state.vad_model, body.to_vec()) {
-    //     Ok(result) => (StatusCode::OK, Json(result)),
-    //     Err(err) => (StatusCode::INTERNAL_SERVER_ERROR, Json(err.to_string())),
-    // }
 }
